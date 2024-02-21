@@ -1,0 +1,44 @@
+import requests
+from pyfiglet import Figlet
+import folium
+
+def get_info_by_ip(ip='127.0.0.1'):
+    try:
+        response = requests.get(url=f'http://ip-api.com/json/{ip}')
+        response.raise_for_status()
+
+
+        if response.text:
+            data = response.json()
+
+
+            if 'lat' in data and 'lon' in data and data['lat'] is not None and data['lon'] is not None:
+                area = folium.Map(location=[data['lat'], data['lon']])
+                area.save(f'{data["query"]}_{data["city"]}.html')
+                print('Map created and saved successfully.')
+            else:
+                print('Coordinates are not available.')
+
+
+            for k, v in data.items():
+                print(f'[{k}] : {v}')
+
+        else:
+            print(f'No data found for IP: {ip}')
+
+    except requests.exceptions.ConnectionError:
+        print('[!] Please check your connection!')
+    except requests.exceptions.HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')
+    except requests.exceptions.RequestException as req_err:
+        print(f'Request error occurred: {req_err}')
+
+def main():
+    preview_text = Figlet(font='slant')
+    print(preview_text.renderText('IP INFO'))
+    ip = input('Please enter a target IP: ')
+
+    get_info_by_ip(ip=ip)
+
+if __name__ == '__main__':
+    main()
